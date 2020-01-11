@@ -1,0 +1,49 @@
+metricbeat.modules:
+  - module: system
+    metricsets: ["core", "cpu", "load", "diskio", "memory", "network", "process", "socket"]
+    process.cgroups.enabled: true
+
+  - module: nginx
+    metricsets: ["stubstatus"]
+    hosts: ["http://nginx_1:80"]
+    period: 5s
+
+  - module: elasticsearch
+    metricsets: ["cluster_stats", "index", "node", "node_stats"]
+    hosts: ["http://elasticsearch_1:9200"]
+    period: 25s
+
+  # - module: golang
+  #   metricsets: ["heap"]
+  #   hosts: ["http://app_1:6060"]
+  #   period: 10s
+
+  - module: docker
+    metricsets: ["container", "cpu", "diskio", "healthcheck", "info", "image", "memory", "network"]
+    hosts: ["unix:///var/run/docker.sock"]
+    period: 10s
+
+# metricbeat.autodiscover:
+#   providers:
+#     - type: docker
+#       hints.enabled: true
+
+processors:
+  - add_host_metadata: ~
+  - add_docker_metadata: ~
+  - add_cloud_metadata: ~
+
+tags: ['service-A']
+fields: { environment: 'staging' }
+
+setup:
+  kibana: { host: http://kibana_1:5601 }
+  dashboards: { enabled: true,  retry: { enabled: true, interval: 10s }}
+
+output.elasticsearch:
+  hosts: ["http://elasticsearch_1:9200"]
+
+monitoring:
+  enabled: true
+  # collection.enabled: true
+  elasticsearch.hosts: ["http://elasticsearch_1:9200"]

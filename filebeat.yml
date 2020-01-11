@@ -1,0 +1,34 @@
+filebeat.modules:
+  - module: nginx
+    access: { enabled: true, var.paths: ["/var/log/nginx/log/access.log*"] }
+    error:  { enabled: true, var.paths: ["/var/log/nginx/log/error.log*"]  }
+
+  - module: elasticsearch
+    audit:       { enabled: true }
+    deprecation: { enabled: true }
+    gc:          { enabled: true }
+    server:      { enabled: true }
+    slowlog:     { enabled: true }
+
+# filebeat.inputs:
+#   - type: container
+#     paths: ['/var/lib/docker/containers/*/*.log']
+
+processors:
+  - add_host_metadata: ~
+  - add_docker_metadata: ~
+  - add_cloud_metadata: ~
+
+tags: ['service-A']
+fields: { environment: 'staging' }
+
+setup:
+  kibana: { host: http://kibana_1:5601 }
+  dashboards: { enabled: true,  retry: { enabled: true, interval: 10s }}
+
+output.elasticsearch:
+  hosts: ["http://elasticsearch_1:9200"]
+
+monitoring:
+  enabled: true
+  elasticsearch.hosts: ["http://elasticsearch_1:9200"]

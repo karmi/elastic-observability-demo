@@ -1,0 +1,40 @@
+heartbeat.monitors:
+  - type: http
+    schedule: '@every 5s'
+    name: app
+    urls: ['http://app_1:8000/status']
+
+  - type: http
+    schedule: '@every 5s'
+    name: nginx
+    urls: ['http://nginx_1:80/server-status']
+
+  - type: http
+    schedule: '@every 5s'
+    name: elasticsearch
+    urls: ['http://elasticsearch_1:9200']
+    check.request.method: HEAD
+
+  - type: http
+    schedule: '@every 5s'
+    name: kibana
+    urls: ['http://kibana_1:5601/status']
+    check.request.method: HEAD
+
+output.elasticsearch:
+  hosts: ["http://elasticsearch_1:9200"]
+
+processors:
+  - add_host_metadata: ~
+  - add_docker_metadata: ~
+  - add_cloud_metadata: ~
+
+tags: ['service-A']
+fields: { environment: 'staging' }
+
+setup.kibana:
+  host: http://kibana_1:5601
+
+monitoring:
+  enabled: true
+  elasticsearch.hosts: ["http://elasticsearch_1:9200"]

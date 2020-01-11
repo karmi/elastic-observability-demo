@@ -1,0 +1,147 @@
+# This configuration file will launch Elastic Stack components for
+# demonstration of the observability features.
+#
+# See also the full-featured demo of the stack at <https://github.com/elastic/stack-docker>.
+
+version: "3.7"
+
+services:
+  app:
+    container_name: app_1
+    build: .
+    networks:
+      - application
+    healthcheck:
+      test: curl --max-time 120 --retry 120 --retry-delay 1 --show-error --silent http://0.0.0.0:8000
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx_1
+    depends_on: ['app']
+    secrets:
+      - source: nginx.conf
+        target: /etc/nginx/nginx.conf
+    volumes:
+      - nginx-logs:/var/log/nginx/log
+    networks:
+      - application
+    ports:
+      - 8080:80
+    healthcheck:
+      test: nginx -t
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:${VERSION}
+    container_name: elasticsearch_1
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+      - es-logs:/usr/share/elasticsearch/logs
+    networks:
+      - elasticstack
+    ports:
+      - 9200:9200
+    environment:
+      - node.name=elasticsearch_1
+      - cluster.name=elastic-stack-demo
+      - cluster.initial_master_nodes=elasticsearch_1
+      - discovery.seed_hosts=elasticsearch_1
+      - bootstrap.memory_lock=true
+      # - path/.logs=/var/log/elasticsearch
+      - xpack.monitoring.collection.enabled=true
+      - ES_JAVA_OPTS=-Xms1G -Xmx1G
+    ulimits: { nofile: { soft: 65535, hard: 65535 }, memlock: -1 }
+    healthcheck:
+      test: curl --max-time 120 --retry 120 --retry-delay 1 --show-error --silent http://localhost:9200
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:${VERSION}
+    container_name: kibana_1
+    depends_on: ['elasticsearch']
+    networks:
+      - elasticstack
+    ports:
+      - 5601:5601
+    environment:
+      - SERVER_NAME=localhost
+      - ELASTICSEARCH_URL=http://elasticsearch_1:9200
+      - ELASTICSEARCH_HOSTS=http://elasticsearch_1:9200
+      - LOGGING_QUIET=true
+      - XPACK_MONITORING_ENABLED=true
+    healthcheck:
+      test: curl --max-time 120 --retry 120 --retry-delay 1 --show-error --silent http://localhost:5601
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:${VERSION}
+    user: root
+    container_name: filebeat_1
+    depends_on: ['elasticsearch', 'kibana']
+    secrets:
+      - source: filebeat.yml
+        target: /usr/share/filebeat/filebeat.yml
+    volumes:
+      - nginx-logs:/var/log/nginx/log
+      - es-logs:/usr/share/elasticsearch/logs
+      # Connect to Docker on host, not in the container.
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - elasticstack
+    restart: on-failure
+    healthcheck:
+      test: filebeat test config
+
+  heartbeat:
+    image: docker.elastic.co/beats/heartbeat:${VERSION}
+    user: root
+    container_name: heartbeat_1
+    depends_on: ['elasticsearch', 'kibana']
+    secrets:
+      - source: heartbeat.yml
+        target: /usr/share/heartbeat/heartbeat.yml
+    volumes:
+      # Connect to Docker on host, not in the container.
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - elasticstack
+      - application
+    restart: on-failure
+    healthcheck:
+      test: heartbeat test config
+
+  metricbeat:
+    image: docker.elastic.co/beats/metricbeat:${VERSION}
+    user: root
+    container_name: metricbeat_1
+    depends_on: ['elasticsearch', 'kibana']
+    secrets:
+      - source: metricbeat.yml
+        target: /usr/share/metricbeat/metricbeat.yml
+    volumes:
+      # Connect to Docker on host, not in the container.
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - elasticstack
+      - application
+    environment:
+      - system.hostfs=/hostfs
+    restart: on-failure
+    healthcheck:
+      test: metricbeat test config
+
+networks:
+  elasticstack: { labels: { elasticstack.description: "Network for the Elastic Stack" }}
+  application:  { labels: { elasticstack.description: "Network for the example application" }}
+
+volumes:
+  es-data:    { labels: { elasticstack.description: "Elasticsearch data" }}
+  es-logs:    { labels: { elasticstack.description: "Elasticsearch logs" }}
+  nginx-logs: { labels: { elasticstack.description: "Nginx logs" }}
+
+secrets:
+  nginx.conf:
+    file: ./nginx.conf
+  filebeat.yml:
+    file: ./filebeat.yml
+  heartbeat.yml:
+    file: ./heartbeat.yml
+  metricbeat.yml:
+    file: ./metricbeat.yml
