@@ -103,11 +103,13 @@ services:
         target: /usr/share/filebeat/filebeat.yml
     volumes:
       - nginx-logs:/var/log/nginx/log
+      - redis-logs:/var/log/redis/
       - es-logs:/usr/share/elasticsearch/logs
       # Connect to Docker on host, not in the container.
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - elasticstack
+      - application
     restart: on-failure
     healthcheck:
       test: filebeat test config

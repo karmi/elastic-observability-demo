@@ -13,10 +13,11 @@ metricbeat.modules:
     hosts: ["http://elasticsearch_1:9200"]
     period: 25s
 
-  # - module: golang
-  #   metricsets: ["heap"]
-  #   hosts: ["http://app_1:6060"]
-  #   period: 10s
+  - module: redis
+    metricsets: ["info", "keyspace"]
+    period: 10s
+    hosts: ["redis://redis_1:6379"]
+    # password: foobared
 
   - module: docker
     metricsets: ["container", "cpu", "diskio", "healthcheck", "info", "image", "memory", "network"]
