@@ -10,6 +10,7 @@ import (
 	"github.com/go-redis/redis"
 
 	"go.elastic.co/apm"
+	"go.elastic.co/apm/module/apmgoredis"
 	"go.elastic.co/apm/module/apmhttp"
 )
 
@@ -38,7 +39,8 @@ func main() {
 
 					// Record page view
 					//
-					i, err := rdb.Incr("pageviews").Result()
+					client := apmgoredis.Wrap(rdb).WithContext(req.Context())
+					i, err := client.Incr("pageviews").Result()
 					if err != nil {
 						apm.CaptureError(req.Context(), err).Send()
 						log.Println("Redis error:", err)
@@ -46,6 +48,8 @@ func main() {
 						return
 					}
 
+					// Return response
+					//
 					fmt.Fprintf(w, "Hello! This page has been viewed %d times.\n", i)
 				},
 			),
