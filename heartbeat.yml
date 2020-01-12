@@ -21,6 +21,11 @@ heartbeat.monitors:
     urls: ['http://kibana_1:5601/status']
     check.request.method: HEAD
 
+  - type: http
+    schedule: '@every 5s'
+    name: apm-server
+    urls: ['http://apm_server_1:8200']
+
 output.elasticsearch:
   hosts: ["http://elasticsearch_1:9200"]
 

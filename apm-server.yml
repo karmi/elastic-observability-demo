@@ -1,0 +1,13 @@
+apm-server:
+  host: 0.0.0.0:8200
+
+output.elasticsearch:
+  hosts: ["http://elasticsearch_1:9200"]
+
+monitoring:
+  enabled: true
+  elasticsearch.hosts: ["http://elasticsearch_1:9200"]
+
+kibana:
+  enabled: true
+  host: ["http://kibana_1:5601"]

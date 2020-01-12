@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+
+	"go.elastic.co/apm/module/apmhttp"
 )
 
 const (
@@ -14,9 +16,23 @@ const (
 func main() {
 	log.SetFlags(0)
 
-	http.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
-		io.WriteString(w, "Hello\n")
-	})
+	http.Handle(
+		"/",
+		apmhttp.Wrap(
+			http.HandlerFunc(
+				func(w http.ResponseWriter, req *http.Request) {
+					// Handle /status
+					//
+					if req.URL.Path == "/status" {
+						io.WriteString(w, "OK")
+						return
+					}
+
+					io.WriteString(w, "Hello Elastic!\n")
+				},
+			),
+		),
+	)
 
 	log.Printf("Server starting at %s...", listenAddr)
 	if err := http.ListenAndServe(listenAddr, nil); err != nil && err != http.ErrServerClosed {

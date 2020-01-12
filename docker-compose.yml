@@ -11,8 +11,14 @@ services:
     build: .
     networks:
       - application
+    environment:
+      - ELASTIC_APM_SERVER_URL=http://apm_server_1:8200
+      - ELASTIC_APM_IGNORE_URLS=/status
+      - ELASTIC_APM_ENVIRONMENT=staging
+      - ELASTIC_APM_METRICS_INTERVAL=5s
+      - ELASTIC_APM_LOG_FILE=stdout
     healthcheck:
-      test: curl --max-time 120 --retry 120 --retry-delay 1 --show-error --silent http://0.0.0.0:8000
+      test: curl --max-time 120 --retry 120 --retry-delay 1 --show-error --silent http://0.0.0.0:8000/status
 
   nginx:
     image: nginx:alpine
@@ -22,7 +28,7 @@ services:
       - source: nginx.conf
         target: /etc/nginx/nginx.conf
     volumes:
-      - nginx-logs:/var/log/nginx/log
+      - nginx-logs:/var/log/nginx/log/
     networks:
       - application
     ports:
@@ -72,8 +78,8 @@ services:
 
   filebeat:
     image: docker.elastic.co/beats/filebeat:${VERSION}
-    user: root
     container_name: filebeat_1
+    user: root
     depends_on: ['elasticsearch', 'kibana']
     secrets:
       - source: filebeat.yml
@@ -91,8 +97,8 @@ services:
 
   heartbeat:
     image: docker.elastic.co/beats/heartbeat:${VERSION}
-    user: root
     container_name: heartbeat_1
+    user: root
     depends_on: ['elasticsearch', 'kibana']
     secrets:
       - source: heartbeat.yml
@@ -109,8 +115,8 @@ services:
 
   metricbeat:
     image: docker.elastic.co/beats/metricbeat:${VERSION}
-    user: root
     container_name: metricbeat_1
+    user: root
     depends_on: ['elasticsearch', 'kibana']
     secrets:
       - source: metricbeat.yml
@@ -127,6 +133,20 @@ services:
     healthcheck:
       test: metricbeat test config
 
+  apm-server:
+    image: docker.elastic.co/apm/apm-server:${VERSION}
+    container_name: apm_server_1
+    depends_on: ['elasticsearch', 'kibana']
+    secrets:
+      - source: apm-server.yml
+        target: /usr/share/apm-server/apm-server.yml
+    networks:
+      - elasticstack
+      - application
+    restart: on-failure
+    healthcheck:
+      test: curl --max-time 120 --retry 120 --retry-delay 1 --show-error --silent http://localhost:8200
+
 networks:
   elasticstack: { labels: { elasticstack.description: "Network for the Elastic Stack" }}
   application:  { labels: { elasticstack.description: "Network for the example application" }}
@@ -139,6 +159,8 @@ volumes:
 secrets:
   nginx.conf:
     file: ./nginx.conf
+  apm-server.yml:
+    file: ./apm-server.yml
   filebeat.yml:
     file: ./filebeat.yml
   heartbeat.yml:
