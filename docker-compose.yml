@@ -8,10 +8,12 @@ version: "3.7"
 services:
   app:
     container_name: app_1
+    depends_on: ['redis']
     build: .
     networks:
       - application
     environment:
+      - REDIS_URL=redis_1:6379
       - ELASTIC_APM_SERVER_URL=http://apm_server_1:8200
       - ELASTIC_APM_IGNORE_URLS=/status
       - ELASTIC_APM_ENVIRONMENT=staging
@@ -35,6 +37,21 @@ services:
       - 8080:80
     healthcheck:
       test: nginx -t
+
+  redis:
+    image: redis:alpine
+    container_name: redis_1
+    command: >
+      /bin/sh -c "
+        chown -R redis:redis /var/log/redis/ &&
+        redis-server --bind 0.0.0.0 | tee /var/log/redis/redis.log
+      "
+    volumes:
+      - redis-logs:/var/log/redis/
+    networks:
+      - application
+    healthcheck:
+      test: redis-cli ping
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:${VERSION}
@@ -155,6 +172,7 @@ volumes:
   es-data:    { labels: { elasticstack.description: "Elasticsearch data" }}
   es-logs:    { labels: { elasticstack.description: "Elasticsearch logs" }}
   nginx-logs: { labels: { elasticstack.description: "Nginx logs" }}
+  redis-logs: { labels: { elasticstack.description: "Redis logs" }}
 
 secrets:
   nginx.conf:
