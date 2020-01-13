@@ -1,30 +1,50 @@
-heartbeat.monitors:
-  - type: http
-    schedule: '@every 5s'
-    name: app
-    urls: ['http://app_1:8000/status']
-
-  - type: http
-    schedule: '@every 5s'
-    name: nginx
-    urls: ['http://nginx_1:80/server-status']
-
-  - type: http
-    schedule: '@every 5s'
-    name: elasticsearch
-    urls: ['http://elasticsearch_1:9200']
-    check.request.method: HEAD
-
-  - type: http
-    schedule: '@every 5s'
-    name: kibana
-    urls: ['http://kibana_1:5601/status']
-    check.request.method: HEAD
-
-  - type: http
-    schedule: '@every 5s'
-    name: apm-server
-    urls: ['http://apm_server_1:8200']
+heartbeat.autodiscover:
+  providers:
+    - type: docker
+      hints.enabled: true
+      templates:
+        # Application
+        - condition: { contains: { docker.container.image: app }}
+          config:
+            - type: http
+              name: app
+              schedule: "@every 5s"
+              hosts: ["${data.host}:${data.port}/status"]
+        # Nginx
+        - condition: { contains: { docker.container.image: nginx }}
+          config:
+            - type: http
+              name: nginx
+              schedule: "@every 5s"
+              hosts: ["${data.host}:${data.port}/server-status"]
+        # Redis
+        - condition: { contains: { docker.container.image: redis }}
+          config:
+            - type: tcp
+              name: redis
+              schedule: "@every 5s"
+              hosts: ["${data.host}:${data.port}"]
+        # Elasticsearch
+        - condition: { contains: { docker.container.image: elasticsearch }}
+          config:
+            - type: http
+              name: elasticsearch
+              schedule: "@every 5s"
+              hosts: ["${data.host}:9200"]
+        # Kibana
+        - condition: { contains: { docker.container.image: kibana }}
+          config:
+            - type: http
+              name: kibana
+              schedule: "@every 15s"
+              hosts: ["${data.host}:${data.port}"]
+        # APM Server
+        - condition: { contains: { docker.container.image: apm-server }}
+          config:
+            - type: http
+              name: apm-server
+              schedule: "@every 15s"
+              hosts: ["${data.host}:${data.port}"]
 
 output.elasticsearch:
   hosts: ["http://elasticsearch_1:9200"]

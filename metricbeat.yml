@@ -3,31 +3,38 @@ metricbeat.modules:
     metricsets: ["core", "cpu", "load", "diskio", "memory", "network", "process", "socket"]
     process.cgroups.enabled: true
 
-  - module: nginx
-    metricsets: ["stubstatus"]
-    hosts: ["http://nginx_1:80"]
-    period: 5s
-
-  - module: elasticsearch
-    metricsets: ["cluster_stats", "index", "node", "node_stats"]
-    hosts: ["http://elasticsearch_1:9200"]
-    period: 25s
-
-  - module: redis
-    metricsets: ["info", "keyspace"]
-    period: 10s
-    hosts: ["redis://redis_1:6379"]
-    # password: foobared
-
   - module: docker
     metricsets: ["container", "cpu", "diskio", "healthcheck", "info", "image", "memory", "network"]
     hosts: ["unix:///var/run/docker.sock"]
     period: 10s
 
-# metricbeat.autodiscover:
-#   providers:
-#     - type: docker
-#       hints.enabled: true
+metricbeat.autodiscover:
+  providers:
+    - type: docker
+      hints.enabled: true
+      templates:
+        # Elasticsearch
+        - condition: { contains: { docker.container.image: elasticsearch }}
+          config:
+            - module: elasticsearch
+              metricsets: ["cluster_stats", "index", "node", "node_stats"]
+              hosts: ["http://${data.host}:9200"]
+              period: 25s
+        # Nginx
+        - condition: { contains: { docker.container.image: nginx }}
+          config:
+            - module: nginx
+              metricsets: ["stubstatus"]
+              hosts: ["http://${data.host}:${data.port}"]
+              period: 5s
+        # Redis
+        - condition: { contains: { docker.container.image: redis }}
+          config:
+            - module: redis
+              metricsets: ["info", "keyspace"]
+              period: 10s
+              hosts: ["redis://${data.host}:${data.port}"]
+              # password: foobared
 
 processors:
   - add_host_metadata: ~

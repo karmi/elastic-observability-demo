@@ -1,25 +1,32 @@
-filebeat.modules:
-  - module: nginx
-    access: { enabled: true, var.paths: ["/var/log/nginx/log/access.log*"] }
-    error:  { enabled: true, var.paths: ["/var/log/nginx/log/error.log*"]  }
-
-  - module: elasticsearch
-    audit:       { enabled: true }
-    deprecation: { enabled: true }
-    gc:          { enabled: true }
-    server:      { enabled: true }
-    slowlog:     { enabled: true }
-
-  - module: redis
-    log:
-      var.paths: ["/var/log/redis/redis.log*"]
-    slowlog:
-      var.hosts: ["redis_1:6379"]
-      # var.password: "foobared"
-
-# filebeat.inputs:
-#   - type: container
-#     paths: ['/var/lib/docker/containers/*/*.log']
+filebeat.autodiscover:
+  providers:
+    - type: docker
+      hints.enabled: true
+      templates:
+        # Nginx
+        - condition: { contains: { docker.container.image: nginx }}
+          config:
+            - module: nginx
+              access: { enabled: true, var.paths: ["/var/log/nginx/log/access.log*"] }
+              error:  { enabled: true, var.paths: ["/var/log/nginx/log/error.log*"]  }
+        # Elasticsearch
+        - condition: { contains: { docker.container.image: elasticsearch }}
+          config:
+            - module: elasticsearch
+              audit:       { enabled: true }
+              deprecation: { enabled: true }
+              gc:          { enabled: true }
+              server:      { enabled: true }
+              slowlog:     { enabled: true }
+        # Redis
+        - condition: { contains: { docker.container.image: redis }}
+          config:
+            - module: redis
+              log:
+                var.paths: ["/var/log/redis/redis.log*"]
+              slowlog:
+                var.hosts: ["redis_1:6379"]
+                # var.password: "foobared"
 
 processors:
   - add_host_metadata: ~
