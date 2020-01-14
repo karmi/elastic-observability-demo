@@ -13,19 +13,13 @@ metricbeat.autodiscover:
     - type: docker
       hints.enabled: true
       templates:
-        # Elasticsearch
-        - condition: { contains: { docker.container.image: elasticsearch }}
-          config:
-            - module: elasticsearch
-              metricsets: ["cluster_stats", "index", "node", "node_stats"]
-              hosts: ["http://${data.host}:9200"]
-              period: 25s
         # Nginx
         - condition: { contains: { docker.container.image: nginx }}
           config:
             - module: nginx
               metricsets: ["stubstatus"]
-              hosts: ["http://${data.host}:${data.port}"]
+              hosts: ["https://${data.docker.container.name}:443"]
+              ssl.certificate_authorities: ["/usr/share/metricbeat/config/certificates/ca/ca.crt"]
               period: 5s
         # Redis
         - condition: { contains: { docker.container.image: redis }}
@@ -34,7 +28,7 @@ metricbeat.autodiscover:
               metricsets: ["info", "keyspace"]
               period: 10s
               hosts: ["redis://${data.host}:${data.port}"]
-              # password: foobared
+              password: secret
 
 processors:
   - add_host_metadata: ~
@@ -45,13 +39,23 @@ tags: ['service-A']
 fields: { environment: 'staging' }
 
 setup:
-  kibana: { host: http://kibana_1:5601 }
+  kibana:
+    host: https://kibana_1:5601
+    username: "elastic"
+    password: "${ELASTIC_PASSWORD}"
+    ssl.enabled: true
+    ssl.certificate_authorities: ["/usr/share/metricbeat/config/certificates/ca/ca.crt"]
   dashboards: { enabled: true,  retry: { enabled: true, interval: 10s }}
 
 output.elasticsearch:
-  hosts: ["http://elasticsearch_1:9200"]
+  hosts: ["https://elasticsearch_1:9200"]
+  username: "elastic"
+  password: "${ELASTIC_PASSWORD}"
+  ssl.certificate_authorities: ["/usr/share/metricbeat/config/certificates/ca/ca.crt"]
 
 monitoring:
   enabled: true
-  # collection.enabled: true
   elasticsearch.hosts: ["http://elasticsearch_1:9200"]
+  elasticsearch.username: "elastic"
+  elasticsearch.password: "${ELASTIC_PASSWORD}"
+  elasticsearch.ssl.certificate_authorities: ["/usr/share/metricbeat/config/certificates/ca/ca.crt"]

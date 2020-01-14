@@ -1,0 +1,15 @@
+server.name: localhost
+server.host: 0.0.0.0
+server.ssl.enabled: true
+server.ssl.certificate: /usr/share/kibana/config/certificates/kibana_1/kibana_1.crt
+server.ssl.key: /usr/share/kibana/config/certificates/kibana_1/kibana_1.key
+
+elasticsearch.hosts: ["https://elasticsearch_1:9200"]
+elasticsearch.username: elastic
+elasticsearch.password: "${ELASTIC_PASSWORD}"
+elasticsearch.ssl.certificateAuthorities: ["/usr/share/kibana/config/certificates/ca/ca.crt"]
+
+xpack.monitoring.kibana.collection.interval: 30000
+xpack.monitoring.ui.container.elasticsearch.enabled: true
+
+logging.quiet: true

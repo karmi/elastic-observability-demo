@@ -25,8 +25,8 @@ filebeat.autodiscover:
               log:
                 var.paths: ["/var/log/redis/redis.log*"]
               slowlog:
-                var.hosts: ["redis_1:6379"]
-                # var.password: "foobared"
+                var.hosts: ["redis://${data.docker.container.name}:${data.port}"]
+                var.password: "${REDIS_PASSWORD}"
 
 processors:
   - add_host_metadata: ~
@@ -37,12 +37,23 @@ tags: ['service-A']
 fields: { environment: 'staging' }
 
 setup:
-  kibana: { host: http://kibana_1:5601 }
+  kibana:
+    host: https://kibana_1:5601
+    username: "elastic"
+    password: "${ELASTIC_PASSWORD}"
+    ssl.enabled: true
+    ssl.certificate_authorities: ["/usr/share/filebeat/config/certificates/ca/ca.crt"]
   dashboards: { enabled: true,  retry: { enabled: true, interval: 10s }}
 
 output.elasticsearch:
-  hosts: ["http://elasticsearch_1:9200"]
+  hosts: ["https://elasticsearch_1:9200"]
+  username: "elastic"
+  password: "${ELASTIC_PASSWORD}"
+  ssl.certificate_authorities: ["/usr/share/filebeat/config/certificates/ca/ca.crt"]
 
 monitoring:
   enabled: true
   elasticsearch.hosts: ["http://elasticsearch_1:9200"]
+  elasticsearch.username: "elastic"
+  elasticsearch.password: "${ELASTIC_PASSWORD}"
+  elasticsearch.ssl.certificate_authorities: ["/usr/share/filebeat/config/certificates/ca/ca.crt"]

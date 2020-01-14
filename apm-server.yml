@@ -1,13 +1,27 @@
 apm-server:
   host: 0.0.0.0:8200
+  secret_token: "${APM_SERVER_TOKEN}"
+  ssl.enabled: true
+  ssl.certificate: "/usr/share/apm-server/config/certificates/apm_server_1/apm_server_1.crt"
+  ssl.key: "/usr/share/apm-server/config/certificates/apm_server_1/apm_server_1.key"
 
 output.elasticsearch:
-  hosts: ["http://elasticsearch_1:9200"]
-
-monitoring:
-  enabled: true
-  elasticsearch.hosts: ["http://elasticsearch_1:9200"]
+  hosts: ["https://elasticsearch_1:9200"]
+  username: "elastic"
+  password: "${ELASTIC_PASSWORD}"
+  ssl.certificate_authorities: ["/usr/share/apm-server/config/certificates/ca/ca.crt"]
 
 kibana:
   enabled: true
-  host: ["http://kibana_1:5601"]
+  host: ["https://kibana_1:5601"]
+  username: elastic
+  password: "${ELASTIC_PASSWORD}"
+  ssl.enabled: true
+  ssl.certificate_authorities: ["/usr/share/apm-server/config/certificates/ca/ca.crt"]
+
+monitoring:
+  enabled: true
+  elasticsearch.hosts: ["https://elasticsearch_1:9200"]
+  elasticsearch.username: elastic
+  elasticsearch.password: "${ELASTIC_PASSWORD}"
+  elasticsearch.ssl.certificate_authorities: ["/usr/share/apm-server/config/certificates/ca/ca.crt"]

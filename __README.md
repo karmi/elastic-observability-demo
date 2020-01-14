@@ -1,10 +1,14 @@
+Generate certificates for the services using `elasticsearch-certutil`:
+
+    docker-compose --file certificates-create.yml up
+
 Download the dependencies for the application:
 
     go mod vendor
 
 Launch the service with Docker Compose:
 
-    docker-compose --project-name demo up
+    docker-compose up --remove-orphans
 
 Wait until Kibana is running:
 
@@ -19,3 +23,7 @@ Alternatively, use a tool like `siege`, `wrk` or `hey`:
     siege --time=15s --internet http://localhost:8080
     wrk --duration 15s  --latency http://localhost:8080
     hey -z 15s http://localhost:8080
+
+To remove the containers, run:
+
+    docker-compose down --volumes

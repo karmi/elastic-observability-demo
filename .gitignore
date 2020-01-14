@@ -1,4 +1,6 @@
 tmp/
 
+certificates/
+
 go.sum
 vendor/

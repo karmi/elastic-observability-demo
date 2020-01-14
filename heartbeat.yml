@@ -9,14 +9,15 @@ heartbeat.autodiscover:
             - type: http
               name: app
               schedule: "@every 5s"
-              hosts: ["${data.host}:${data.port}/status"]
+              hosts: ["${data.docker.container.name}:${data.port}/status"]
         # Nginx
         - condition: { contains: { docker.container.image: nginx }}
           config:
             - type: http
               name: nginx
               schedule: "@every 5s"
-              hosts: ["${data.host}:${data.port}/server-status"]
+              hosts: ["https://${data.docker.container.name}:443/server-status"]
+              ssl: { certificate_authorities: ["/usr/share/heartbeat/config/certificates/ca/ca.crt"] }
         # Redis
         - condition: { contains: { docker.container.image: redis }}
           config:
@@ -29,25 +30,29 @@ heartbeat.autodiscover:
           config:
             - type: http
               name: elasticsearch
-              schedule: "@every 5s"
-              hosts: ["${data.host}:9200"]
+              schedule: "@every 15s"
+              hosts: ["https://${data.docker.container.name}:9200"]
+              username: elastic
+              password: ${ELASTIC_PASSWORD}
+              ssl: { certificate_authorities: ["/usr/share/heartbeat/config/certificates/ca/ca.crt"] }
         # Kibana
         - condition: { contains: { docker.container.image: kibana }}
           config:
             - type: http
               name: kibana
               schedule: "@every 15s"
-              hosts: ["${data.host}:${data.port}"]
+              hosts: ["https://${data.docker.container.name}:5601"]
+              username: elastic
+              password: ${ELASTIC_PASSWORD}
+              ssl: { certificate_authorities: ["/usr/share/heartbeat/config/certificates/ca/ca.crt"] }
         # APM Server
         - condition: { contains: { docker.container.image: apm-server }}
           config:
             - type: http
               name: apm-server
-              schedule: "@every 15s"
-              hosts: ["${data.host}:${data.port}"]
-
-output.elasticsearch:
-  hosts: ["http://elasticsearch_1:9200"]
+              schedule: "@every 30s"
+              hosts: ["https://${data.docker.container.name}:8200"]
+              ssl: { certificate_authorities: ["/usr/share/heartbeat/config/certificates/ca/ca.crt"] }
 
 processors:
   - add_host_metadata: ~
@@ -58,8 +63,21 @@ tags: ['service-A']
 fields: { environment: 'staging' }
 
 setup.kibana:
-  host: http://kibana_1:5601
+  host: https://kibana_1:5601
+  username: "elastic"
+  password: "${ELASTIC_PASSWORD}"
+  ssl.enabled: true
+  ssl.certificate_authorities: ["/usr/share/heartbeat/config/certificates/ca/ca.crt"]
+
+output.elasticsearch:
+  hosts: ["https://elasticsearch_1:9200"]
+  username: "elastic"
+  password: "${ELASTIC_PASSWORD}"
+  ssl.certificate_authorities: ["/usr/share/heartbeat/config/certificates/ca/ca.crt"]
 
 monitoring:
   enabled: true
-  elasticsearch.hosts: ["http://elasticsearch_1:9200"]
+  elasticsearch.hosts: ["https://elasticsearch_1:9200"]
+  elasticsearch.username: "elastic"
+  elasticsearch.password: "${ELASTIC_PASSWORD}"
+  elasticsearch.ssl.certificate_authorities: ["/usr/share/heartbeat/config/certificates/ca/ca.crt"]
