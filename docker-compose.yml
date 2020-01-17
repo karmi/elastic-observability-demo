@@ -7,7 +7,6 @@ version: "3.7"
 
 services:
   app:
-    container_name: app_1
     depends_on: ['redis']
     build: .
     volumes:
@@ -15,11 +14,11 @@ services:
     networks:
       - application
     environment:
-      - REDIS_URL=redis_1:6379
+      - REDIS_URL=demo_redis_1:6379
       - REDIS_PWD=${REDIS_PASSWORD}
-      - ELASTIC_APM_SERVER_URL=https://apm_server_1:8200
+      - ELASTIC_APM_SERVER_URL=https://demo_apm_server_1:8200
       - ELASTIC_APM_SECRET_TOKEN=${APM_SERVER_TOKEN}
-      - ELASTIC_APM_SERVER_CERT=/certificates/apm_server_1/apm_server_1.crt
+      - ELASTIC_APM_SERVER_CERT=/certificates/apm_server/apm_server.crt
       - ELASTIC_APM_IGNORE_URLS=/status
       - ELASTIC_APM_ENVIRONMENT=staging
       - ELASTIC_APM_METRICS_INTERVAL=5s
@@ -29,7 +28,6 @@ services:
 
   nginx:
     image: nginx:alpine
-    container_name: nginx_1
     depends_on: ['app']
     secrets:
       - source: nginx.conf
@@ -47,7 +45,6 @@ services:
 
   redis:
     image: redis:alpine
-    container_name: redis_1
     command: >
       /bin/sh -c "
         chown -R redis:redis /var/log/redis/ &&
@@ -62,7 +59,6 @@ services:
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:${VERSION}
-    container_name: elasticsearch_1
     volumes:
       - es-data:/usr/share/elasticsearch/data
       - es-logs:/usr/share/elasticsearch/logs
@@ -72,13 +68,14 @@ services:
     ports:
       - 9200:9200
     environment:
-      - node.name=elasticsearch_1
+      - node.name=demo_elasticsearch_1
       - cluster.name=elastic-stack-demo
-      - cluster.initial_master_nodes=elasticsearch_1
-      - discovery.seed_hosts=elasticsearch_1
+      - cluster.initial_master_nodes=demo_elasticsearch_1
+      - discovery.seed_hosts=demo_elasticsearch_1
       - bootstrap.memory_lock=true
-      - network.host=elasticsearch_1,_local_
-      - network.publish_host=elasticsearch_1
+      - network.host=demo_elasticsearch_1,_local_
+      - network.publish_host=demo_elasticsearch_1
+      - node.max_local_storage_nodes=3
       - xpack.monitoring.collection.enabled=true
       - xpack.monitoring.collection.interval=30s
       - ES_JAVA_OPTS=-Xms1G -Xmx1G -Des.transport.cname_in_publish_address=true
@@ -86,13 +83,13 @@ services:
       - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
       - xpack.security.enabled=true
       - xpack.security.http.ssl.enabled=true
-      - xpack.security.http.ssl.key=/usr/share/elasticsearch/config/certificates/elasticsearch_1/elasticsearch_1.key
-      - xpack.security.http.ssl.certificate=/usr/share/elasticsearch/config/certificates/elasticsearch_1/elasticsearch_1.crt
+      - xpack.security.http.ssl.key=/usr/share/elasticsearch/config/certificates/elasticsearch/elasticsearch.key
+      - xpack.security.http.ssl.certificate=/usr/share/elasticsearch/config/certificates/elasticsearch/elasticsearch.crt
       - xpack.security.http.ssl.certificate_authorities=/usr/share/elasticsearch/config/certificates/ca/ca.crt
       - xpack.security.transport.ssl.enabled=true
       - xpack.security.transport.ssl.verification_mode=certificate
-      - xpack.security.transport.ssl.key=/usr/share/elasticsearch/config/certificates/elasticsearch_1/elasticsearch_1.key
-      - xpack.security.transport.ssl.certificate=/usr/share/elasticsearch/config/certificates/elasticsearch_1/elasticsearch_1.crt
+      - xpack.security.transport.ssl.key=/usr/share/elasticsearch/config/certificates/elasticsearch/elasticsearch.key
+      - xpack.security.transport.ssl.certificate=/usr/share/elasticsearch/config/certificates/elasticsearch/elasticsearch.crt
       - xpack.security.transport.ssl.certificate_authorities=/usr/share/elasticsearch/config/certificates/ca/ca.crt
     ulimits: { nofile: { soft: 65535, hard: 65535 }, memlock: -1 }
     healthcheck:
@@ -100,7 +97,6 @@ services:
 
   kibana:
     image: docker.elastic.co/kibana/kibana:${VERSION}
-    container_name: kibana_1
     depends_on: ['elasticsearch']
     secrets:
       - source: kibana.yml
@@ -118,7 +114,6 @@ services:
 
   filebeat:
     image: docker.elastic.co/beats/filebeat:${VERSION}
-    container_name: filebeat_1
     user: root
     depends_on: ['elasticsearch', 'kibana']
     command: -e --strict.perms=false
@@ -143,7 +138,6 @@ services:
 
   heartbeat:
     image: docker.elastic.co/beats/heartbeat:${VERSION}
-    container_name: heartbeat_1
     user: root
     depends_on: ['elasticsearch', 'kibana']
     command: -e --strict.perms=false
@@ -165,7 +159,6 @@ services:
 
   metricbeat:
     image: docker.elastic.co/beats/metricbeat:${VERSION}
-    container_name: metricbeat_1
     user: root
     depends_on: ['elasticsearch', 'kibana']
     command: -e --strict.perms=false --system.hostfs=/hostfs
@@ -190,9 +183,8 @@ services:
     healthcheck:
       test: metricbeat --strict.perms=false test config
 
-  apm-server:
+  apm_server:
     image: docker.elastic.co/apm/apm-server:${VERSION}
-    container_name: apm_server_1
     depends_on: ['elasticsearch', 'kibana']
     command: -e --strict.perms=false
     volumes:

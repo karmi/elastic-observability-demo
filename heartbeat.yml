@@ -64,21 +64,21 @@ tags: ['service-A']
 fields: { environment: 'staging' }
 
 setup.kibana:
-  host: https://kibana_1:5601
+  host: https://demo_kibana_1:5601
   username: "elastic"
   password: "${ELASTIC_PASSWORD}"
   ssl.enabled: true
   ssl.certificate_authorities: ["/usr/share/heartbeat/config/certificates/ca/ca.crt"]
 
 output.elasticsearch:
-  hosts: ["https://elasticsearch_1:9200"]
+  hosts: ["https://demo_elasticsearch_1:9200"]
   username: "elastic"
   password: "${ELASTIC_PASSWORD}"
   ssl.certificate_authorities: ["/usr/share/heartbeat/config/certificates/ca/ca.crt"]
 
 monitoring:
   enabled: true
-  elasticsearch.hosts: ["https://elasticsearch_1:9200"]
+  elasticsearch.hosts: ["https://demo_elasticsearch_1:9200"]
   elasticsearch.username: "elastic"
   elasticsearch.password: "${ELASTIC_PASSWORD}"
   elasticsearch.ssl.certificate_authorities: ["/usr/share/heartbeat/config/certificates/ca/ca.crt"]

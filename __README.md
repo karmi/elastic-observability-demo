@@ -14,7 +14,7 @@ Launch the service with Docker Compose:
 
 Wait until Kibana is running:
 
-    until docker inspect kibana_1 > /dev/null 2>&1 && [[ $(docker inspect -f '{{ .State.Health.Status }}' kibana_1) == "healthy" ]]; do echo -n '.'; sleep 5; done; echo -e "\nKIBANA IS RUNNING\n"
+    until docker inspect demo_kibana_1 > /dev/null 2>&1 && [[ $(docker inspect -f '{{ .State.Health.Status }}' demo_kibana_1) == "healthy" ]]; do echo -n '.'; sleep 5; done; echo -e "\nKIBANA IS RUNNING\n"
 
 Open Kibana at <http://localhost:5601> and drive some traffic to the application:
 
