@@ -168,12 +168,16 @@ services:
     container_name: metricbeat_1
     user: root
     depends_on: ['elasticsearch', 'kibana']
-    command: -e --strict.perms=false
+    command: -e --strict.perms=false --system.hostfs=/hostfs
     secrets:
       - source: metricbeat.yml
         target: /usr/share/metricbeat/metricbeat.yml
     volumes:
       - ./certificates:/usr/share/metricbeat/config/certificates/
+      # Monitor the Docker host rather than the Metricbeat container.
+      - /proc:/hostfs/proc:ro
+      - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
+      - /:/hostfs:ro
       # Connect to Docker on host, not in the container.
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
