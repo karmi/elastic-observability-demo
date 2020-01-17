@@ -19,6 +19,7 @@ metricbeat.autodiscover:
             - module: nginx
               metricsets: ["stubstatus"]
               hosts: ["https://${data.docker.container.name}:443"]
+              headers: { Authorization: "Bearer secret" }
               ssl.certificate_authorities: ["/usr/share/metricbeat/config/certificates/ca/ca.crt"]
               period: 5s
         # Redis

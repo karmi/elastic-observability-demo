@@ -18,6 +18,7 @@ heartbeat.autodiscover:
               schedule: "@every 5s"
               hosts: ["https://${data.docker.container.name}:443/server-status"]
               ssl: { certificate_authorities: ["/usr/share/heartbeat/config/certificates/ca/ca.crt"] }
+              check.request.headers: { Authorization: "Bearer secret" }
         # Redis
         - condition: { contains: { docker.container.image: redis }}
           config:
