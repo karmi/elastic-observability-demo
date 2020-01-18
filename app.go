@@ -1,11 +1,14 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/go-redis/redis"
 
@@ -19,11 +22,13 @@ const (
 )
 
 var (
-	rdb = redis.NewClient(&redis.Options{Addr: os.Getenv("REDIS_URL"), Password: os.Getenv("REDIS_PWD")})
+	rdb = redis.NewClient(
+		&redis.Options{Addr: os.Getenv("REDIS_URL"), Password: os.Getenv("REDIS_PWD")})
 )
 
 func main() {
 	log.SetFlags(0)
+	rand.Seed(time.Now().UnixNano())
 
 	http.Handle(
 		"/",
@@ -34,6 +39,15 @@ func main() {
 					//
 					if req.URL.Path == "/status" {
 						io.WriteString(w, "OK")
+						return
+					}
+
+					// Simulate server errors (5% requests)
+					//
+					if rand.Intn(100) > 95 {
+						apm.CaptureError(req.Context(), errors.New("Simulated server error")).Send()
+						log.Println("Service unavailable")
+						http.Error(w, "Service Unavailable", http.StatusServiceUnavailable)
 						return
 					}
 
