@@ -7,26 +7,22 @@ filebeat.autodiscover:
         - condition: { contains: { docker.container.image: nginx }}
           config:
             - module: nginx
-              access: { enabled: true, var.paths: ["/var/log/nginx/log/access.log*"] }
-              error:  { enabled: true, var.paths: ["/var/log/nginx/log/error.log*"]  }
+              access: { input: { type: "container", stream: "stdout", paths: ["/hostfs/var/lib/docker/containers/${data.docker.container.id}/*-json.log*"] }}
+              error:  { input: { type: "container", stream: "stderr", paths: ["/hostfs/var/lib/docker/containers/${data.docker.container.id}/*-json.log*"]  }}
         # Elasticsearch
         - condition: { contains: { docker.container.image: elasticsearch }}
           config:
             - module: elasticsearch
-              audit:       { enabled: true }
-              deprecation: { enabled: true }
-              gc:          { enabled: true }
-              server:      { enabled: true }
-              slowlog:     { enabled: true }
+              audit:       { input: { type: "container", paths: ["/hostfs/var/lib/docker/containers/${data.docker.container.id}/*-json.log"] }}
+              deprecation: { input: { type: "container", paths: ["/hostfs/var/lib/docker/containers/${data.docker.container.id}/*-json.log"] }}
+              gc:          { var: { paths: ["/usr/share/elasticsearch/logs/gc.log*"] }}
+              server:      { input: { type: "container", paths: ["/hostfs/var/lib/docker/containers/${data.docker.container.id}/*-json.log"] }}
+              slowlog:     { input: { type: "container", paths: ["/hostfs/var/lib/docker/containers/${data.docker.container.id}/*-json.log"] }}
         # Redis
         - condition: { contains: { docker.container.image: redis }}
           config:
             - module: redis
-              log:
-                var.paths: ["/var/log/redis/redis.log*"]
-              slowlog:
-                var.hosts: ["redis://${data.docker.container.name}:${data.port}"]
-                var.password: "${REDIS_PASSWORD}"
+              log.var.paths: ["/hostfs/var/lib/docker/containers/${data.docker.container.id}/*-json.log"]
 
 processors:
   - add_host_metadata: ~

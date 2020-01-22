@@ -33,7 +33,6 @@ services:
       - source: nginx.conf
         target: /etc/nginx/nginx.conf
     volumes:
-      - nginx-logs:/var/log/nginx/log/
       - ./certificates:/etc/nginx/certificates/
     networks:
       - application
@@ -45,13 +44,7 @@ services:
 
   redis:
     image: redis:alpine
-    command: >
-      /bin/sh -c "
-        chown -R redis:redis /var/log/redis/ &&
-        redis-server --bind 0.0.0.0 --requirepass ${REDIS_PASSWORD} | tee /var/log/redis/redis.log
-      "
-    volumes:
-      - redis-logs:/var/log/redis/
+    command: redis-server --bind 0.0.0.0 --requirepass ${REDIS_PASSWORD}
     networks:
       - application
     healthcheck:
@@ -121,16 +114,17 @@ services:
       - source: filebeat.yml
         target: /usr/share/filebeat/filebeat.yml
     volumes:
-      - nginx-logs:/var/log/nginx/log
-      - redis-logs:/var/log/redis/
       - es-logs:/usr/share/elasticsearch/logs
       - ./certificates:/usr/share/filebeat/config/certificates/
+      # Mount the Docker logs inside the container.
+      - /var/lib/docker/containers:/hostfs/var/lib/docker/containers
       # Connect to Docker on host, not in the container.
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - elasticstack
       - application
     environment:
+      - system.hostfs=/hostfs
       - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
     restart: on-failure
     healthcheck:
@@ -209,8 +203,6 @@ networks:
 volumes:
   es-data:    { labels: { elasticstack.description: "Elasticsearch data" }}
   es-logs:    { labels: { elasticstack.description: "Elasticsearch logs" }}
-  nginx-logs: { labels: { elasticstack.description: "Nginx logs" }}
-  redis-logs: { labels: { elasticstack.description: "Redis logs" }}
 
 secrets:
   apm-server.yml:
