@@ -21,7 +21,3 @@ kibana:
 
 monitoring:
   enabled: true
-  elasticsearch.hosts: ["https://demo_elasticsearch_1:9200"]
-  elasticsearch.username: elastic
-  elasticsearch.password: "${ELASTIC_PASSWORD}"
-  elasticsearch.ssl.certificate_authorities: ["/usr/share/apm-server/config/certificates/ca/ca.crt"]

@@ -35,11 +35,23 @@ metricbeat.autodiscover:
         - condition: { contains: { docker.container.image: elasticsearch }}
           config:
             - module: elasticsearch
-              metricsets: ["ccr", "cluster_stats", "index", "index_recovery", "index_summary", "ml_job", "node_stats", "shard"]
+              metricsets: ["ccr", "enrich", "cluster_stats", "index", "index_recovery", "index_summary", "ml_job", "node_stats", "shard"]
               hosts: ["https://${data.docker.container.name}:9200"]
               username: elastic
               password: ${ELASTIC_PASSWORD}
               ssl.certificate_authorities: ["/usr/share/metricbeat/config/certificates/ca/ca.crt"]
+              xpack.enabled: true
+              period: 30s
+        # Kibana
+        - condition: { contains: { docker.container.image: kibana }}
+          config:
+            - module: kibana
+              metricsets: ["stats"]
+              hosts: ["https://${data.docker.container.name}:5601"]
+              username: elastic
+              password: ${ELASTIC_PASSWORD}
+              ssl.certificate_authorities: ["/usr/share/metricbeat/config/certificates/ca/ca.crt"]
+              xpack.enabled: true
               period: 30s
 
 processors:
@@ -50,24 +62,17 @@ processors:
 tags: ['service-A']
 fields: { environment: 'staging' }
 
-setup:
-  kibana:
-    host: https://demo_kibana_1:5601
-    username: "elastic"
-    password: "${ELASTIC_PASSWORD}"
-    ssl.enabled: true
-    ssl.certificate_authorities: ["/usr/share/metricbeat/config/certificates/ca/ca.crt"]
-  dashboards: { enabled: true,  retry: { enabled: true, interval: 10s }}
-
 output.elasticsearch:
   hosts: ["https://demo_elasticsearch_1:9200"]
   username: "elastic"
   password: "${ELASTIC_PASSWORD}"
   ssl.certificate_authorities: ["/usr/share/metricbeat/config/certificates/ca/ca.crt"]
 
+setup:
+  kibana:
+    host: https://demo_kibana_1:5601
+    ssl.certificate_authorities: ["/usr/share/metricbeat/config/certificates/ca/ca.crt"]
+  dashboards: { enabled: true,  retry: { enabled: true, interval: 10s }}
+
 monitoring:
   enabled: true
-  elasticsearch.hosts: ["https://demo_elasticsearch_1:9200"]
-  elasticsearch.username: "elastic"
-  elasticsearch.password: "${ELASTIC_PASSWORD}"
-  elasticsearch.ssl.certificate_authorities: ["/usr/share/metricbeat/config/certificates/ca/ca.crt"]

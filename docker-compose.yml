@@ -69,8 +69,6 @@ services:
       - network.host=demo_elasticsearch_1,_local_
       - network.publish_host=demo_elasticsearch_1
       - node.max_local_storage_nodes=3
-      - xpack.monitoring.collection.enabled=true
-      - xpack.monitoring.collection.interval=30s
       - ES_JAVA_OPTS=-Xms1G -Xmx1G -Des.transport.cname_in_publish_address=true
       # Security & TLS
       - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
@@ -155,7 +153,7 @@ services:
     image: docker.elastic.co/beats/metricbeat:${VERSION}
     user: root
     depends_on: ['elasticsearch', 'kibana']
-    command: -e --strict.perms=false --system.hostfs=/hostfs
+    command: -e --strict.perms=false
     secrets:
       - source: metricbeat.yml
         target: /usr/share/metricbeat/metricbeat.yml

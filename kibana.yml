@@ -9,7 +9,6 @@ elasticsearch.username: elastic
 elasticsearch.password: "${ELASTIC_PASSWORD}"
 elasticsearch.ssl.certificateAuthorities: ["/usr/share/kibana/config/certificates/ca/ca.crt"]
 
-xpack.monitoring.kibana.collection.interval: 30000
 xpack.monitoring.ui.container.elasticsearch.enabled: true
 
 logging.quiet: true
