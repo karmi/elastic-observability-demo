@@ -2,11 +2,12 @@ metricbeat.modules:
   - module: system
     metricsets: ["core", "cpu", "load", "diskio", "memory", "network", "process", "socket"]
     process.cgroups.enabled: true
+    period: 15s
 
   - module: docker
     metricsets: ["container", "cpu", "diskio", "healthcheck", "info", "image", "memory", "network"]
     hosts: ["unix:///var/run/docker.sock"]
-    period: 10s
+    period: 15s
 
 metricbeat.autodiscover:
   providers:
@@ -30,6 +31,16 @@ metricbeat.autodiscover:
               period: 10s
               hosts: ["redis://${data.host}:${data.port}"]
               password: secret
+        # Elasticsearch
+        - condition: { contains: { docker.container.image: elasticsearch }}
+          config:
+            - module: elasticsearch
+              metricsets: ["ccr", "cluster_stats", "index", "index_recovery", "index_summary", "ml_job", "node_stats", "shard"]
+              hosts: ["https://${data.docker.container.name}:9200"]
+              username: elastic
+              password: ${ELASTIC_PASSWORD}
+              ssl.certificate_authorities: ["/usr/share/metricbeat/config/certificates/ca/ca.crt"]
+              period: 30s
 
 processors:
   - add_host_metadata: ~
