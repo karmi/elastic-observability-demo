@@ -15,7 +15,7 @@ filebeat.autodiscover:
             - module: elasticsearch
               audit:       { input: { type: "container", paths: ["/hostfs/var/lib/docker/containers/${data.docker.container.id}/*-json.log"] }}
               deprecation: { input: { type: "container", paths: ["/hostfs/var/lib/docker/containers/${data.docker.container.id}/*-json.log"] }}
-              gc:          { var: { paths: ["/usr/share/elasticsearch/logs/gc.log*"] }}
+              # gc:          { var: { paths: ["/usr/share/elasticsearch/logs/gc.log*"] }}
               server:      { input: { type: "container", paths: ["/hostfs/var/lib/docker/containers/${data.docker.container.id}/*-json.log"] }}
               slowlog:     { input: { type: "container", paths: ["/hostfs/var/lib/docker/containers/${data.docker.container.id}/*-json.log"] }}
         # Redis
