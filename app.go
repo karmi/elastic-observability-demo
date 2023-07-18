@@ -51,6 +51,12 @@ func main() {
 						return
 					}
 
+					// Simulate slow responses (10% requests)
+					//
+					if rand.Intn(100) > 90 {
+						time.Sleep(time.Duration(rand.Intn(10)) * time.Second)
+					}
+
 					// Record page view
 					//
 					client := apmgoredis.Wrap(rdb).WithContext(req.Context())
