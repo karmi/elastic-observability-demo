@@ -4,11 +4,10 @@ server.ssl.enabled: true
 server.ssl.certificate: /usr/share/kibana/config/certificates/kibana/kibana.crt
 server.ssl.key: /usr/share/kibana/config/certificates/kibana/kibana.key
 
-elasticsearch.hosts: ["https://demo_elasticsearch_1:9200"]
-elasticsearch.username: elastic
+elasticsearch.hosts: ["https://demo-elasticsearch-1:9200"]
+elasticsearch.username: kibana_system
 elasticsearch.password: "${ELASTIC_PASSWORD}"
 elasticsearch.ssl.certificateAuthorities: ["/usr/share/kibana/config/certificates/ca/ca.crt"]
 
 xpack.monitoring.ui.container.elasticsearch.enabled: true
 
-logging.quiet: true

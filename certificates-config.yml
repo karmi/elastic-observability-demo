@@ -1,8 +1,8 @@
 instances:
   - name: nginx
     dns:
-      - demo_nginx
-      - demo_nginx_1
+      - demo-nginx
+      - demo-nginx-1
       - localhost
       - application.local
       - "*.bc.googleusercontent.com"
@@ -12,12 +12,12 @@ instances:
 
   - name: elasticsearch
     dns:
-      - demo_elasticsearch_1
-      - demo_elasticsearch_1.local
-      - demo_elasticsearch_2
-      - demo_elasticsearch_2.local
-      - demo_elasticsearch_3
-      - demo_elasticsearch_3.local
+      - demo-elasticsearch-1
+      - demo-elasticsearch-1.local
+      - demo-elasticsearch-2
+      - demo-elasticsearch-2.local
+      - demo-elasticsearch-3
+      - demo-elasticsearch-3.local
       - localhost
     ip:
       - 0.0.0.0
@@ -25,8 +25,8 @@ instances:
 
   - name: kibana
     dns:
-      - demo_kibana_1
-      - demo_kibana_1.local
+      - demo-kibana-1
+      - demo-kibana-1.local
       - localhost
     ip:
       - 0.0.0.0
@@ -34,7 +34,7 @@ instances:
 
   - name: apm_server
     dns:
-      - demo_apm_server_1
+      - demo-apm_server-1
       - localhost
     ip:
       - 0.0.0.0

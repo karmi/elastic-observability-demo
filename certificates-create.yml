@@ -2,7 +2,7 @@
 #
 #     docker-compose --file certificates-create.yml up
 #
-# See: https://www.elastic.co/guide/en/elasticsearch/reference/current/configuring-tls-docker.html
+# See: https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-compose-file
 
 version: "3.7"
 
@@ -14,18 +14,30 @@ services:
     working_dir: /usr/share/elasticsearch
     command: >
       bash -c '
-        yum install -y -q -e 0 unzip;
-        if [[ ! -f /certificates/bundle.zip ]]; then
+        if [ ! -f config/certs/ca.zip ]; then
+          echo "Creating CA";
+          mkdir -p config/certs/;
+          bin/elasticsearch-certutil ca --silent --pem -out config/certs/ca.zip;
+          unzip config/certs/ca.zip -d config/certs;
+        fi;
+        if [[ ! -f config/certs/certs.zip ]]; then
+          echo "Creating certificates";
           bin/elasticsearch-certutil cert \
             --pem \
             --days 365 \
-            --keep-ca-key \
-            --in config/certificates/certificates-config.yml \
-            --out /certificates/bundle.zip;
-          unzip /certificates/bundle.zip -d /certificates;
+            --in config/certs/instances.yml \
+            --out config/certs/certs.zip \
+            --ca-cert config/certs/ca/ca.crt \
+            --ca-key config/certs/ca/ca.key;
+          unzip config/certs/certs.zip -d config/certs;
         fi;
-        chown -R 1000:0 /certificates
+        chown -R 1000:0 config/certs;
       '
     volumes:
-      - ./certificates:/certificates
-      - ./certificates-config.yml:/usr/share/elasticsearch/config/certificates/certificates-config.yml
+      - ./certificates:/usr/share/elasticsearch/config/certs
+      - ./certificates-config.yml:/usr/share/elasticsearch/config/certs/instances.yml
+    healthcheck:
+      test: ["CMD-SHELL", "[ -f config/certs/es01/es01.crt ]"]
+      interval: 1s
+      timeout: 5s
+      retries: 120

@@ -33,14 +33,14 @@ tags: ['service-A']
 fields: { environment: 'staging' }
 
 output.elasticsearch:
-  hosts: ["https://demo_elasticsearch_1:9200"]
+  hosts: ["https://demo-elasticsearch-1:9200"]
   username: "elastic"
   password: "${ELASTIC_PASSWORD}"
   ssl.certificate_authorities: ["/usr/share/filebeat/config/certificates/ca/ca.crt"]
 
 setup:
   kibana:
-    host: https://demo_kibana_1:5601
+    host: https://demo-kibana-1:5601
     ssl.certificate_authorities: ["/usr/share/filebeat/config/certificates/ca/ca.crt"]
   dashboards: { enabled: true,  retry: { enabled: true, interval: 10s }}
 

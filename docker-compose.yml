@@ -1,7 +1,7 @@
 # This configuration file will launch Elastic Stack components for
 # demonstration of the observability features with TLS and authentication.
 #
-# See also the full-featured demo of the stack at <https://github.com/elastic/stack-docker>.
+# See: https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-compose-file
 
 version: "3.7"
 
@@ -14,9 +14,9 @@ services:
     networks:
       - application
     environment:
-      - REDIS_URL=demo_redis_1:6379
+      - REDIS_URL=demo-redis-1:6379
       - REDIS_PWD=${REDIS_PASSWORD}
-      - ELASTIC_APM_SERVER_URL=https://demo_apm_server_1:8200
+      - ELASTIC_APM_SERVER_URL=https://demo-apm_server-1:8200
       - ELASTIC_APM_SECRET_TOKEN=${APM_SERVER_TOKEN}
       - ELASTIC_APM_SERVER_CERT=/certificates/apm_server/apm_server.crt
       - ELASTIC_APM_IGNORE_URLS=/status
@@ -61,14 +61,13 @@ services:
     ports:
       - 9200:9200
     environment:
-      - node.name=demo_elasticsearch_1
+      - node.name=demo-elasticsearch-1
       - cluster.name=elastic-stack-demo
-      - cluster.initial_master_nodes=demo_elasticsearch_1
-      - discovery.seed_hosts=demo_elasticsearch_1
+      - cluster.initial_master_nodes=demo-elasticsearch-1
+      - discovery.seed_hosts=demo-elasticsearch-1
       - bootstrap.memory_lock=true
-      - network.host=demo_elasticsearch_1,_local_
-      - network.publish_host=demo_elasticsearch_1
-      - node.max_local_storage_nodes=3
+      - network.host=demo-elasticsearch-1,_local_
+      - network.publish_host=demo-elasticsearch-1
       - ES_JAVA_OPTS=-Xms1G -Xmx1G -Des.transport.cname_in_publish_address=true
       # Security & TLS
       - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
@@ -180,7 +179,7 @@ services:
     depends_on: ['elasticsearch', 'kibana']
     command: -e --strict.perms=false
     volumes:
-      - ./certificates:/usr/share/apm-server/config/certificates/
+      - ./certificates:/usr/share/apm_server/config/certificates/
     secrets:
       - source: apm-server.yml
         target: /usr/share/apm-server/apm-server.yml
@@ -192,7 +191,7 @@ services:
       - APM_SERVER_TOKEN=${APM_SERVER_TOKEN}
     restart: on-failure
     healthcheck:
-      test: curl --cacert /usr/share/apm-server/config/certificates/ca/ca.crt --max-time 120 --retry 120 --retry-delay 1 --show-error --silent https://localhost:8200
+      test: curl --cacert /usr/share/apm_server/config/certificates/ca/ca.crt --max-time 120 --retry 120 --retry-delay 1 --show-error --silent https://localhost:8200
 
 networks:
   elasticstack: { labels: { elasticstack.description: "Network for the Elastic Stack" }}
