@@ -54,7 +54,9 @@ func main() {
 					// Simulate slow responses (10% requests)
 					//
 					if rand.Intn(100) > 90 {
+						span, _ := apm.StartSpan(req.Context(), "Sleep", "custom")
 						time.Sleep(time.Duration(rand.Intn(10)) * time.Second)
+						span.End()
 					}
 
 					// Record page view
