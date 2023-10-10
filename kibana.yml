@@ -11,3 +11,6 @@ elasticsearch.ssl.certificateAuthorities: ["/usr/share/kibana/config/certificate
 
 xpack.monitoring.ui.container.elasticsearch.enabled: true
 
+xpack.fleet.packages:
+  - name: apm
+    version: latest
