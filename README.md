@@ -42,7 +42,7 @@ Wait until Elasticsearch is running, and set the password for Kibana:
     curl -s -X POST --cacert ./certificates/ca/ca.crt -u "elastic:${ELASTIC_PASSWORD}" -H "Content-Type: application/json" https://localhost:9200/_security/user/kibana_system/_password -d "{\"password\":\"${ELASTIC_PASSWORD}\"}"
 
 
-Once Kibana is running, navigate to the "APM" page at <https://localhost:5601/app/apm/services>, logging in as `elastic:elastic` and add the APM integration, following the [documentation](https://www.elastic.co/guide/en/apm/guide/current/apm-server-configuration.html): just click _“Save & Continue”_ and choose _“Add Elastic Agent Later”_.
+Once Kibana is running, navigate to the "APM" page at <https://localhost:5601/app/apm/services>, logging in as `elastic:elastic`.
 
 Drive some traffic to the application (it will randomly fail 5% requests and simulate latency for 10% of requests):
 
