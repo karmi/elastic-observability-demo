@@ -1,24 +1,27 @@
-# $ go mod vendor
-# $ docker build --tag elastic/demo-elasticstack .
-# $ docker run -it --publish 8000:8000 --rm elastic/demo-elasticstack
+# $ docker build -t elastic-observability-demo-app -f Dockerfile .
+# $ docker run -it --rm --env REDIS_URL=...  --publish 8000:8000 elastic-observability-demo-app
 #
-FROM golang:1-alpine AS Builder
+# Cf. <https://testdriven.io/blog/docker-best-practices>
+
+FROM python:3.12-slim
 
 WORKDIR /app
 
-RUN apk update && apk add --no-cache --quiet ca-certificates git
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
 
-COPY go.mod go.sum ./
-COPY vendor ./vendor
+# RUN apt-get update && \
+#   apt-get install --yes --no-install-recommends gcc && \
+#   apt-get clean && \
+#   rm -rf /var/lib/apt/lists/*
 
-COPY app.go ./
-RUN CGO_ENABLED=0 GOOS=linux go build -mod=vendor -tags netgo -o /app/server app.go
+COPY requirements.txt .
+RUN pip install -r requirements.txt
 
-FROM alpine
+COPY app.py /app/
 
-RUN apk update && apk add --no-cache --quiet ca-certificates curl
+ENV PORT=${PORT:-8000}
 
-COPY --from=Builder /app/server /server
-
-EXPOSE 8000
-ENTRYPOINT ["/server"]
+# https://cloud.google.com/run/docs/tips/python#optimize_gunicorn
+#
+ENTRYPOINT /usr/local/bin/gunicorn --bind 0.0.0.0:$PORT --workers 1 --threads 8 --timeout 0 --access-logfile - 'app:app'

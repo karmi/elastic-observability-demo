@@ -15,12 +15,7 @@ Verify that the certificates have been succesfully created:
 
     ls -la ./certificates
 
-Download the dependencies for the Go application:
-
-    go mod tidy
-    go mod vendor
-
-> NOTE: When you change the application source in `app.go`, remove the container with `docker-compose stop app && docker-compose rm --force app` and start it again with `docker-compose up app --build --force-recreate --detach`.
+> NOTE: When you change the application source in `app.py`, remove the container with `docker-compose stop app && docker-compose rm --force app` and start it again with `docker-compose up app --build --force-recreate --detach`.
 
 Launch the services with [Docker Compose](https://docs.docker.com/compose/):
 

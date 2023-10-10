@@ -1,0 +1,7 @@
+redis==5
+
+flask==3
+flask-cors==4
+gunicorn==21.2
+
+elastic-apm[flask]==6.18
