@@ -32,7 +32,7 @@ Launch the services with [Docker Compose](https://docs.docker.com/compose/):
 Wait until Elasticsearch is running, and set the password for Kibana:
 
     until docker inspect demo-elasticsearch-1 > /dev/null 2>&1 && [[ $(docker inspect -f '{{ .State.Health.Status }}' demo-elasticsearch-1) == "healthy" ]]; do echo -n '.'; sleep 1; done; source .env
-    curl -s -X POST --cacert ./certificates/ca/ca.crt -u "elastic:${ELASTIC_PASSWORD}" -H "Content-Type: application/json" https://localhost:9200/_security/user/kibana_system/_password -d "{\"password\":\"${ELASTIC_PASSWORD}\"}"
+    docker exec -it demo-elasticsearch-1 curl -s -X POST --cacert /usr/share/elasticsearch/config/certificates/ca/ca.crt -u "elastic:${ELASTIC_PASSWORD}" -H "Content-Type: application/json" https://localhost:9200/_security/user/kibana_system/_password -d "{\"password\":\"${ELASTIC_PASSWORD}\"}"
 
 ### 4. Inspect the Results
 

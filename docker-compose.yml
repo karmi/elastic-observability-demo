@@ -78,8 +78,8 @@ services:
       - ./certificates:/usr/share/elasticsearch/config/certificates/
     networks:
       - elasticstack
-    ports:
-      - 9200:9200
+    # ports:
+      # - 9200:9200
     environment:
       - node.name=demo-elasticsearch-1
       - cluster.name=elastic-stack-demo
