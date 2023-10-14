@@ -1,7 +1,7 @@
 # Observability with the Elastic Stack
 
 This repository contains demo configuration for monitoring a typical web service
-with the [Elastic Stack](https://www.elastic.co/products).
+and a standalone script with the [Elastic Stack](https://www.elastic.co/products).
 
 -----
 
@@ -25,7 +25,7 @@ Launch the services with [Docker Compose](https://docs.docker.com/compose/):
 
 > NOTE: To bind Nginx on standard ports, export the corresponding environment variables: `NGINX_HTTP_PORT=80 NGINX_HTTPS_PORT=443 docker compose up --remove-orphans --detach`.
 
-> NOTE: When you change the source in `app.py`, rebuild it with `docker compose up app --build --force-recreate --detach app`.
+> NOTE: When you change the source in `app.py` (or `script.py`), rebuild it with `docker compose up app --build --force-recreate --detach app`.
 
 ### 3. Set the Kibana Password
 

@@ -4,4 +4,9 @@ flask==3
 flask-cors==4
 gunicorn==21.2
 
+python-dotenv
+
+# https://github.com/elastic/apm-agent-python/issues/1912
+urllib3==1.26.15
+
 elastic-apm[flask]==6.18

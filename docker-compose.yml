@@ -8,7 +8,9 @@ version: "3.7"
 services:
   app:
     depends_on: ['redis']
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.app
     volumes:
       - ./certificates:/certificates/
     networks:
@@ -16,6 +18,7 @@ services:
     environment:
       - REDIS_URL=demo-redis-1:6379
       - REDIS_PWD=${REDIS_PASSWORD}
+      - ELASTIC_APM_SERVICE_NAME=demo-app
       - ELASTIC_APM_SERVER_URL=https://demo-apm_server-1:8200
       - ELASTIC_APM_SECRET_TOKEN=${APM_SERVER_TOKEN}
       - ELASTIC_APM_SERVER_CERT=/certificates/apm_server/apm_server.crt
@@ -25,6 +28,23 @@ services:
       - ELASTIC_APM_LOG_FILE=stdout
     healthcheck:
       test: curl --max-time 120 --retry 120 --retry-delay 1 --show-error --silent http://0.0.0.0:8000/status
+
+  script:
+    build:
+      context: .
+      dockerfile: Dockerfile.script
+    volumes:
+      - ./certificates:/certificates/
+    networks:
+      - application
+    environment:
+      - ELASTIC_APM_SERVICE_NAME=demo-script
+      - ELASTIC_APM_SERVER_URL=https://demo-apm_server-1:8200
+      - ELASTIC_APM_SECRET_TOKEN=${APM_SERVER_TOKEN}
+      - ELASTIC_APM_SERVER_CERT=/certificates/apm_server/apm_server.crt
+      - ELASTIC_APM_ENVIRONMENT=staging
+      - ELASTIC_APM_METRICS_INTERVAL=5s
+      - ELASTIC_APM_LOG_FILE=stdout
 
   nginx:
     image: nginx:alpine

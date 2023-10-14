@@ -11,8 +11,7 @@ from elasticapm.contrib.flask import ElasticAPM
 
 app = Flask(__name__)
 
-# Configuration for ElasticAPM
-app.config["ELASTIC_APM"] = {"SERVICE_NAME": "demo-service"}
+# ElasticAPM configuration
 apm = ElasticAPM(app)
 
 # Redis configuration
@@ -39,7 +38,7 @@ def index():
     # Simulate slow responses (10% requests)
     if random.randint(1, 100) > 90:
         with elasticapm.capture_span("Sleep"):
-            time.sleep(random.randint(0, 10))
+            time.sleep(random.randint(0, 5))
 
     # Record page view
     try:
