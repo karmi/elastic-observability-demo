@@ -7,7 +7,7 @@ version: "3.7"
 
 services:
   app:
-    depends_on: ['redis']
+    depends_on: [ 'redis' ]
     build:
       context: .
       dockerfile: Dockerfile.app
@@ -21,7 +21,7 @@ services:
       - ELASTIC_APM_SERVICE_NAME=demo-app
       - ELASTIC_APM_SERVER_URL=https://demo-apm_server-1:8200
       - ELASTIC_APM_SECRET_TOKEN=${APM_SERVER_TOKEN}
-      - ELASTIC_APM_SERVER_CERT=/certificates/apm_server/apm_server.crt
+      - ELASTIC_APM_SERVER_CA_CERT_FILE=/certificates/ca/ca.crt
       - ELASTIC_APM_IGNORE_URLS=/status
       - ELASTIC_APM_ENVIRONMENT=staging
       - ELASTIC_APM_METRICS_INTERVAL=5s
@@ -41,14 +41,14 @@ services:
       - ELASTIC_APM_SERVICE_NAME=demo-script
       - ELASTIC_APM_SERVER_URL=https://demo-apm_server-1:8200
       - ELASTIC_APM_SECRET_TOKEN=${APM_SERVER_TOKEN}
-      - ELASTIC_APM_SERVER_CERT=/certificates/apm_server/apm_server.crt
+      - ELASTIC_APM_SERVER_CA_CERT_FILE=/certificates/ca/ca.crt
       - ELASTIC_APM_ENVIRONMENT=staging
       - ELASTIC_APM_METRICS_INTERVAL=5s
       - ELASTIC_APM_LOG_FILE=stdout
 
   nginx:
     image: nginx:alpine
-    depends_on: ['app']
+    depends_on: [ 'app' ]
     secrets:
       - source: nginx.conf
         target: /etc/nginx/nginx.conf
@@ -107,7 +107,7 @@ services:
 
   kibana:
     image: docker.elastic.co/kibana/kibana:${VERSION}
-    depends_on: ['elasticsearch']
+    depends_on: [ 'elasticsearch' ]
     secrets:
       - source: kibana.yml
         target: /usr/share/kibana/config/kibana.yml
@@ -125,7 +125,7 @@ services:
   filebeat:
     image: docker.elastic.co/beats/filebeat:${VERSION}
     user: root
-    depends_on: ['elasticsearch', 'kibana']
+    depends_on: [ 'elasticsearch', 'kibana' ]
     command: -e --strict.perms=false
     secrets:
       - source: filebeat.yml
@@ -150,7 +150,7 @@ services:
   heartbeat:
     image: docker.elastic.co/beats/heartbeat:${VERSION}
     user: root
-    depends_on: ['elasticsearch', 'kibana']
+    depends_on: [ 'elasticsearch', 'kibana' ]
     command: -e --strict.perms=false
     secrets:
       - source: heartbeat.yml
@@ -171,7 +171,7 @@ services:
   metricbeat:
     image: docker.elastic.co/beats/metricbeat:${VERSION}
     user: root
-    depends_on: ['elasticsearch', 'kibana']
+    depends_on: [ 'elasticsearch', 'kibana' ]
     command: -e --strict.perms=false
     secrets:
       - source: metricbeat.yml
@@ -196,7 +196,7 @@ services:
 
   apm_server:
     image: docker.elastic.co/apm/apm-server:${VERSION}
-    depends_on: ['elasticsearch', 'kibana']
+    depends_on: [ 'elasticsearch', 'kibana' ]
     command: -e --strict.perms=false
     volumes:
       - ./certificates:/usr/share/apm_server/config/certificates/
