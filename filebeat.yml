@@ -3,6 +3,16 @@ filebeat.autodiscover:
     - type: docker
       hints.enabled: true
       templates:
+        # Application/Script
+        - condition: { equals: { docker.container.labels.filebeat_enabled: "true" } }
+          config:
+            - type: container
+              paths: ["/hostfs/var/lib/docker/containers/${data.docker.container.id}/*-json.log*"]
+              json:
+                add_error_key: true
+                keys_under_root: true
+                overwrite_keys: true
+                expand_keys: true
         # Nginx
         - condition: { contains: { docker.container.image: nginx }}
           config:

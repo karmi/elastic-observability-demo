@@ -1,10 +1,29 @@
+import logging
+import os
 import random
 import time
+import sys
 
 from dotenv import load_dotenv
 import elasticapm
+import ecs_logging
 
 load_dotenv()
+
+logger = logging.getLogger("script")
+logger.setLevel(logging.INFO)
+handler = logging.StreamHandler(sys.stdout)
+
+if os.getenv("ELASTIC_APM_ENABLED", "") not in ["false" or "no"]:
+    handler.setFormatter(
+        ecs_logging.StdlibFormatter(
+            exclude_fields=["log.original"],
+            extra={"event": {"dataset": "demo.script"}},
+            stack_trace_limit=0,  # Stack traces are in APM
+        )
+    )
+
+logger.addHandler(handler)
 
 
 @elasticapm.capture_span()
@@ -17,7 +36,8 @@ def process(payload):
         # Simulate duration
         time.sleep(random.uniform(0, 1.0))
 
-    print(f"    PROCESSED: {payload}")
+    # Custom logging
+    logger.info(f"PROCESSED: Job #{payload}", extra={"iteration": payload})
     return True
 
 
@@ -27,12 +47,13 @@ def main():
             elasticapm.get_client().begin_transaction("cronjob")
             apm_result = "unknown"
 
-            print(f"--> Processing job [{i}]")
-            process(f"Job #{i}")
+            # Custom logging
+            logger.debug(f"--> Processing job [{i}]")
+            process(i)
 
             apm_result = "success"
         except Exception as e:
-            print(f"[!] Error when processing job [{i}]")
+            logger.error(f"[!] Error when processing job [{i}]")
             elasticapm.get_client().capture_exception()
             apm_result = "failure"
         finally:
@@ -41,7 +62,7 @@ def main():
 
 if __name__ == "__main__":
     elasticapm.instrument()
-    elasticapm.Client(enabled=True)
+    elasticapm.Client()
 
     try:
         main()

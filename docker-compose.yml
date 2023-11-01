@@ -19,6 +19,7 @@ services:
       - REDIS_URL=demo-redis-1:6379
       - REDIS_PWD=${REDIS_PASSWORD}
       - ELASTIC_APM_SERVICE_NAME=demo-app
+      - ELASTIC_APM_ENABLED=true
       - ELASTIC_APM_SERVER_URL=https://demo-apm_server-1:8200
       - ELASTIC_APM_SECRET_TOKEN=${APM_SERVER_TOKEN}
       - ELASTIC_APM_SERVER_CA_CERT_FILE=/certificates/ca/ca.crt
@@ -26,6 +27,8 @@ services:
       - ELASTIC_APM_ENVIRONMENT=staging
       - ELASTIC_APM_METRICS_INTERVAL=5s
       - ELASTIC_APM_LOG_FILE=stdout
+    labels:
+      filebeat_enabled: "true"
     healthcheck:
       test: curl --max-time 120 --retry 120 --retry-delay 1 --show-error --silent http://0.0.0.0:8000/status
 
@@ -39,12 +42,15 @@ services:
       - application
     environment:
       - ELASTIC_APM_SERVICE_NAME=demo-script
+      - ELASTIC_APM_ENABLED=true
       - ELASTIC_APM_SERVER_URL=https://demo-apm_server-1:8200
       - ELASTIC_APM_SECRET_TOKEN=${APM_SERVER_TOKEN}
       - ELASTIC_APM_SERVER_CA_CERT_FILE=/certificates/ca/ca.crt
       - ELASTIC_APM_ENVIRONMENT=staging
       - ELASTIC_APM_METRICS_INTERVAL=5s
       - ELASTIC_APM_LOG_FILE=stdout
+    labels:
+      filebeat_enabled: "true"
 
   nginx:
     image: nginx:alpine
@@ -78,7 +84,7 @@ services:
       - ./certificates:/usr/share/elasticsearch/config/certificates/
     networks:
       - elasticstack
-    # ports:
+      # ports:
       # - 9200:9200
     environment:
       - node.name=demo-elasticsearch-1
@@ -213,12 +219,14 @@ services:
       test: curl --cacert /usr/share/apm_server/config/certificates/ca/ca.crt --max-time 120 --retry 120 --retry-delay 1 --show-error --silent https://localhost:8200
 
 networks:
-  elasticstack: { labels: { elasticstack.description: "Network for the Elastic Stack" }}
-  application:  { labels: { elasticstack.description: "Network for the example application" }}
+  elasticstack:
+  application:
+
 
 volumes:
-  es-data:    { labels: { elasticstack.description: "Elasticsearch data" }}
-  es-logs:    { labels: { elasticstack.description: "Elasticsearch logs" }}
+  es-data:
+  es-logs:
+
 
 secrets:
   apm-server.yml:

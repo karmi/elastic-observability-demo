@@ -24,4 +24,4 @@ ENV PORT=${PORT:-8000}
 
 # https://cloud.google.com/run/docs/tips/python#optimize_gunicorn
 #
-ENTRYPOINT /usr/local/bin/gunicorn --bind 0.0.0.0:$PORT --workers 1 --threads 8 --timeout 0 --access-logfile - 'app:app'
+ENTRYPOINT /usr/local/bin/gunicorn --bind 0.0.0.0:$PORT --workers 1 --threads 8 --timeout 0 'app:app'
