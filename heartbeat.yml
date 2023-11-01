@@ -16,9 +16,9 @@ heartbeat.autodiscover:
             - type: http
               name: nginx
               schedule: "@every 5s"
-              hosts: ["https://${data.docker.container.name}:443/server-status"]
+              hosts: ["https://${data.docker.container.name}:443/nginx-status"]
               ssl: { certificate_authorities: ["/usr/share/heartbeat/config/certificates/ca/ca.crt"] }
-              check.request.headers: { Authorization: "Bearer secret" }
+              check.request.headers: { Authorization: "Bearer ${NGINX_PASSWORD}" }
         # Redis
         - condition: { contains: { docker.container.image: redis }}
           config:
