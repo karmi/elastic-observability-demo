@@ -57,11 +57,11 @@ heartbeat.autodiscover:
 
 processors:
   - add_host_metadata: ~
-  - add_docker_metadata: ~
+  - add_docker_metadata:
+      match_source_index: 5
   - add_cloud_metadata: ~
 
 tags: ['service-A']
-fields: { environment: 'staging' }
 
 output.elasticsearch:
   hosts: ["https://demo-elasticsearch-1:9200"]
